@@ -1,7 +1,14 @@
-import { createContext, ReactNode, useContext } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useReducer
+} from "react";
+import { todoReducer } from "./TodoReducer";
 
 // step1. create context
-type Todo = {
+export type Todo = {
   id: number;
   task: string;
   isCompleted: boolean;
@@ -28,8 +35,22 @@ type Props = {
   children: ReactNode;
 };
 export function TodoContextProvider({ children }: Props) {
+  const [todos, dispatch] = useReducer(todoReducer, []);
+
+  useEffect(() => {
+    const getTodos = async () => {
+      const response = await fetch("http://localhost:3005/todos");
+
+      const todos = await response.json();
+
+      dispatch({ type: "INIT", todos });
+    };
+
+    getTodos();
+  }, []);
+
   const value = {
-    todos: [],
+    todos,
     add: () => {},
     edit: () => {},
     delete: () => {}
@@ -39,4 +60,5 @@ export function TodoContextProvider({ children }: Props) {
 }
 
 // step3. use the context
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTodos = () => useContext(TodoContext);
