@@ -3,7 +3,8 @@ import {
   ReactNode,
   useContext,
   useEffect,
-  useReducer
+  useReducer,
+  useState
 } from "react";
 import { todoReducer } from "./TodoReducer";
 
@@ -16,12 +17,16 @@ export type Todo = {
 
 // think about what you want to provide as context
 type TodoContextType = {
+  newTask: string;
+  updateNewTask: (task: string) => void;
   todos: Todo[];
   add: () => void;
   edit: () => void;
   delete: () => void;
 };
 const INITIAL_CONTEXT: TodoContextType = {
+  newTask: "",
+  updateNewTask: () => {},
   todos: [],
   add: () => {},
   edit: () => {},
@@ -36,6 +41,11 @@ type Props = {
 };
 export function TodoContextProvider({ children }: Props) {
   const [todos, dispatch] = useReducer(todoReducer, []);
+  const [newTask, setNewTask] = useState<string>("");
+
+  const updateNewTask = (task: string) => {
+    setNewTask(task);
+  };
 
   useEffect(() => {
     const getTodos = async () => {
@@ -49,9 +59,18 @@ export function TodoContextProvider({ children }: Props) {
     getTodos();
   }, []);
 
+  const add = () => {
+    dispatch({
+      type: "ADD",
+      todo: { id: todos.length, task: newTask, isCompleted: false }
+    });
+  };
+
   const value = {
+    newTask,
+    updateNewTask,
     todos,
-    add: () => {},
+    add,
     edit: () => {},
     delete: () => {}
   };
